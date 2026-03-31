@@ -121,6 +121,51 @@ Diese README wird dann auf der Profilseite der Organisation angezeigt.
 
 ---
 
+## Warum man manche Mitglieder in einer Organization nicht sieht
+
+GitHub unterscheidet bei Organisationsmitgliedern zwischen:
+
+- **private membership**
+- **public membership**
+
+Wenn Mitglieder auf **private** stehen, erscheinen sie **nicht öffentlich** auf der Org-Seite.
+
+Wichtig für Owners:
+
+> Du kannst als Org-Owner andere Mitglieder **nicht zentral öffentlich schalten**. GitHub erlaubt das nur der jeweiligen Person selbst.
+
+Das ist eine GitHub-Regel und kein Konfigurationsfehler von OpenSIN.
+
+### Was das für OpenSIN bedeutet
+
+Wenn OpenSIN-Mitglieder öffentlich auf der Org-Seite sichtbar sein sollen, muss **jede Person die eigene Mitgliedschaft selbst auf public stellen**.
+
+### Schnellster Weg in der GitHub-Oberfläche
+
+1. GitHub öffnen
+2. `OpenSIN-AI` aufrufen
+3. Bereich **People** öffnen
+4. Bei der eigenen Mitgliedschaft die Sichtbarkeit von **Private** auf **Public** umstellen
+
+### CLI-Weg für das jeweilige Mitglied
+
+Jede Person kann es auch selbst per GitHub CLI tun:
+
+```bash
+gh auth refresh -h github.com -s write:org
+gh api -X PUT /orgs/OpenSIN-AI/public_members/$(gh api user --jq .login)
+```
+
+### Sichtbarkeit prüfen
+
+```bash
+gh api /orgs/OpenSIN-AI/public_members --jq '.[].login'
+```
+
+Wenn dort dein Username erscheint, bist du öffentlich sichtbar.
+
+---
+
 ## Was in ein gutes Organization-Profil gehört
 
 Eine starke Org-README sollte beantworten:
