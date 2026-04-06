@@ -5,10 +5,17 @@
 ### A) ERSTMALIGES SETUP (nur 1x pro Mac/VM)
 
 ```bash
-git clone https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup.git
+# Repo klonen (falls noch nicht vorhanden)
+if [ ! -d "Infra-SIN-Dev-Setup" ]; then
+  git clone https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup.git
+fi
 cd Infra-SIN-Dev-Setup/opencode-docker-build
+
+# Binary downloaden
 chmod +x download-binary.sh
 ./download-binary.sh
+
+# Image bauen (dauert ~30s, nur 1x nötig)
 docker build -t oc .
 ```
 
