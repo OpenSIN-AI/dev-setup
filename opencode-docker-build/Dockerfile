@@ -11,10 +11,18 @@ RUN apk add --no-cache libgcc libstdc++ ripgrep git curl bash
 RUN apk add --no-cache github-cli
 
 FROM base AS build-amd64
-COPY dist/opencode-linux-x64-baseline-musl/bin/opencode /usr/local/bin/opencode
+RUN curl -sL "https://github.com/anomalyco/opencode/releases/download/v1.3.17/opencode-linux-x64-baseline-musl.tar.gz" -o /tmp/oc.tar.gz && \
+    tar -xzf /tmp/oc.tar.gz -C /tmp/ && \
+    mv /tmp/opencode /usr/local/bin/opencode && \
+    chmod +x /usr/local/bin/opencode && \
+    rm /tmp/oc.tar.gz
 
 FROM base AS build-arm64
-COPY dist/opencode-linux-arm64-musl/bin/opencode /usr/local/bin/opencode
+RUN curl -sL "https://github.com/anomalyco/opencode/releases/download/v1.3.17/opencode-linux-arm64-musl.tar.gz" -o /tmp/oc.tar.gz && \
+    tar -xzf /tmp/oc.tar.gz -C /tmp/ && \
+    mv /tmp/opencode /usr/local/bin/opencode && \
+    chmod +x /usr/local/bin/opencode && \
+    rm /tmp/oc.tar.gz
 
 ARG TARGETARCH
 FROM build-${TARGETARCH}
