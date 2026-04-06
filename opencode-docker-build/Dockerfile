@@ -17,7 +17,7 @@ FROM build-${TARGETARCH}
 
 # Install plugins (oh-my-opencode + antigravity-auth)
 RUN mkdir -p /root/.config/opencode && cd /root/.config/opencode && npm init -y
-RUN cd /root/.config/opencode && npm install oh-my-opencode@3.11.2 opencode-antigravity-auth@1.6.5-beta.0
+RUN cd /root/.config/opencode && npm install --ignore-scripts oh-my-opencode@3.11.2 opencode-antigravity-auth@1.6.5-beta.0
 
 # Copy opencode.json template (plugins, model, providers, agents)
 COPY opencode.json /root/.config/opencode/opencode.json
