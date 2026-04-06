@@ -4,18 +4,26 @@
 
 ### A) ERSTMALIGES SETUP (nur 1x pro Mac/VM)
 
+**Schritt 1: Repo holen**
+
 ```bash
-# Repo klonen (falls noch nicht vorhanden)
-if [ ! -d "Infra-SIN-Dev-Setup" ]; then
-  git clone https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup.git
-fi
-cd Infra-SIN-Dev-Setup/opencode-docker-build
+# Falls noch nicht vorhanden:
+git clone https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup.git
+```
 
-# Binary downloaden
-chmod +x download-binary.sh
+**Schritt 2: Rein gehen, Binary laden, Image bauen**
+
+```bash
+cd ~/Infra-SIN-Dev-Setup/opencode-docker-build
 ./download-binary.sh
+docker build -t oc .
+```
 
-# Image bauen (dauert ~30s, nur 1x nötig)
+**Schritt 2: Rein gehen, Binary laden, Image bauen**
+
+```bash
+cd ~/Infra-SIN-Dev-Setup/opencode-docker-build
+./download-binary.sh
 docker build -t oc .
 ```
 
