@@ -1,74 +1,115 @@
-# OpenSIN Development Environment Setup
+# Infra-SIN-Dev-Setup
 
-> Complete setup guide for OpenSIN development — macOS, OCI VM, Docker, Cloud Storage
+> Complete setup guide for OpenSIN-AI development environment — macOS, OCI VM, OpenCode Stack, A2A Agents
 
 ## Documentation
 
-- [README](https://github.com/OpenSIN-AI/dev-setup/blob/main/README.md) - Quick start, features, architecture
-- [macOS Setup Guide](https://github.com/OpenSIN-AI/dev-setup/blob/main/macOS-dev-setup.md) - Local development on Mac
-- [OCI Setup Guide](https://github.com/OpenSIN-AI/dev-setup/blob/main/OCI-dev-setup.md) - Oracle Cloud A1.Flex VM setup
-- [OpenCode CLI Setup](https://github.com/OpenSIN-AI/dev-setup/blob/main/opencode-dev-setup.md) - OpenCode CLI installation
-- [Docker Setup](https://github.com/OpenSIN-AI/dev-setup/blob/main/opencode-docker-build/) - Docker development
-- [Box Storage Guide](https://github.com/OpenSIN-AI/dev-setup/blob/main/box-storage.md) - Box.com integration
-- [Contributing](https://github.com/OpenSIN-AI/dev-setup/blob/main/CONTRIBUTING.md) - How to contribute
-- [Security Policy](https://github.com/OpenSIN-AI/dev-setup/blob/main/SECURITY.md) - Security policy
-- [Changelog](https://github.com/OpenSIN-AI/dev-setup/blob/main/CHANGELOG.md) - Version history
+- [README](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/README.md) - Quick start, features, architecture
+- [macOS Setup Guide](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/macOS-dev-setup.md) - Local development on Mac (Homebrew, Git, Bun, Python, Docker, VS Code, iTerm2)
+- [OCI Setup Guide](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/OCI-dev-setup.md) - Oracle Cloud A1.Flex VM setup (Frankfurt, 4 OCPUs, 24 GB RAM)
+- [OpenCode CLI Setup](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/opencode-dev-setup.md) - OpenCode CLI installation
+- [Docker Setup](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/opencode-docker-build/) - Docker development
+- [Box Storage Guide](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/box-storage.md) - Box.com integration for logs/screenshots
+- [oh-my-sin.json Guide](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/oh-my-sin-json.md) - Zentrales A2A Team Register (17 Teams, 40+ Agents)
+- [Contributing](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/CONTRIBUTING.md) - How to contribute
+- [Security Policy](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/SECURITY.md) - Security policy
+- [Changelog](https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/blob/main/CHANGELOG.md) - Version history
 
 ## Key Information
 
-- License: Apache 2.0
-- Languages: Bash, Python, YAML, Markdown
-- Platforms: macOS, Oracle Cloud (OCI), Docker
-- Tech Stack: Homebrew, Git, Bun, Python, Docker, VS Code, OpenCode CLI
-- Cloud Region: Frankfurt eu-frankfurt-1 (OCI)
-- Cloud VM: Always-Free A1.Flex (4 OCPUs, 24 GB RAM)
-- Storage: Box.com (10 GB free)
-- Repo: https://github.com/OpenSIN-AI/dev-setup
+- License: MIT
+- Languages: Bash, Python, YAML, Markdown, JavaScript/TypeScript
+- Platforms: macOS, Oracle Cloud (OCI), Docker, HF Spaces
+- Tech Stack: Homebrew, Git, Node.js 22 LTS, Bun 1.2+, Python 3.13, Docker Desktop, VS Code, iTerm2, OpenCode CLI
+- Cloud Region: Frankfurt eu-frankfurt-1 (OCI) with 3 Availability Domains
+- Cloud VM: Always-Free A1.Flex (4 OCPUs, 24 GB RAM) — or PAYGO workaround
+- Storage: Box.com (10 GB free) via A2A-SIN-Box-Storage
+- Automation: n8n + A2A-SIN-GitHub-Action on OCI VM (NO GitHub Actions!)
+- Repo: https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup
 
 ## What This Project Does
 
 This is the **central setup documentation system** for OpenSIN-AI developers. It provides step-by-step guides for:
 
-1. **macOS Development Environment** - Set up a MacBook as a full development machine with Homebrew, Git, Node.js (Bun), Python, Docker
-2. **Oracle Cloud Infrastructure VM** - Create a free A1.Flex cloud VM in Frankfurt with Ubuntu 22.04/24.04 LTS
-3. **Docker Development** - Containerized development with Docker and Docker Compose
-4. **Cloud Storage** - Box.com integration for logs, screenshots, backups (10 GB free)
-5. **OpenCode CLI** - Installation and configuration of the OpenCode CLI for A2A agent control
+1. **macOS Development Environment** — Homebrew, Git, Node.js (Bun, NOT npm!), Python 3.13, Docker Desktop, VS Code, iTerm2, SSH keys, Raycast
+2. **Oracle Cloud Infrastructure VM** — Free A1.Flex cloud VM in Frankfurt with Ubuntu, n8n, A2A-SIN-GitHub-Action, Box.com Storage
+3. **OpenCode Stack** — Global Brain (DPMA v4), PCPM hooks, 29+ Skills, 5 Plugins, 21 A2A Agents, 11 CLI Tools
+4. **A2A Team Fleet** — 17 Teams (Coding, Worker, Infrastructure, Google Apps, Apple Apps, Social, Messaging, etc.) via oh-my-sin.json
+5. **sin-sync** — Config sync Mac → OCI VM → HF VMs for identical environments
 
 ## Architecture
 
-- Local MacBook → VS Code Remote SSH → OCI VM
-- Docker containers on both local Mac and OCI VM
-- Box.com cloud storage for persistent file backup
-- GitHub Templates (Issues, PRs) — Automatisierung via n8n + A2A-SIN-GitHub-Action auf OCI VM
+- **Local Mac** → OpenCode CLI + Homebrew Stack + Git + SSH
+- **OCI VM** → n8n (Port 5678) + A2A-SIN-Box-Storage (Port 3000) + A2A-SIN-GitHub-Action + sin-supabase (200 GB)
+- **A2A Fleet** → SIN-Zeus (Fleet Commander) → SIN-Simone-MCP, A2A-SIN-Frontend, A2A-SIN-Backend
+- **Remote VMs** → HF Spaces, Lightning AI
+- **Automation** → n8n + A2A-SIN-GitHub-Action (NO GitHub Actions!)
+- **Storage** → Box.com via A2A-SIN-Box-Storage for logs, screenshots, backups
 
 ## Quick Start Commands
 
 ```bash
-# macOS setup
-./setup-mac.sh
+# 1. Xcode Tools
+xcode-select --install
 
-# Clone and explore
-git clone https://github.com/OpenSIN-AI/dev-setup.git
-cd dev-setup
+# 2. Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# SSH to OCI VM (after setup)
-ssh -i ~/.ssh/oci_key ubuntu@<VM_IP>
+# 3. Dev Stack
+brew install git node bun python gh docker
 
-# Docker on OCI
-docker run -d -p 80:80 nginx
+# 4. Clone upgraded-opencode-stack
+gh repo clone Delqhi/upgraded-opencode-stack ~/dev/upgraded-opencode-stack
+cd ~/dev/upgraded-opencode-stack && ./install.sh
+
+# 5. Initialize Global Brain (MANDATORY!)
+node ~/.config/opencode/skills/global-brain/src/cli.js setup-hooks \
+  --project $(basename "$PWD") --project-root "$PWD" --agents-directive
+
+# 6. Sync to OCI VM (after OCI setup)
+sin-sync
 ```
+
+## Features
+
+| Capability | Description | Status |
+|:---|:---|:---:|
+| Oracle Cloud A1.Flex | 4 OCPUs, 24 GB RAM, Always-Free | ✅ |
+| n8n Workflow Engine | Workflow Automation on OCI VM | ✅ |
+| A2A-SIN-GitHub-Action | CI/CD-like Automation (NO GitHub Actions!) | ✅ |
+| Box.com Storage | Unlimited Cloud Storage for logs/screenshots | ✅ |
+| OpenCode CLI | 29+ Skills, 5 Plugins, 21 Agents | ✅ |
+| sin-sync | Config-Sync Mac → OCI VM → HF VMs | ✅ |
+| Zentrales A2A Team Register | 17 Teams in oh-my-sin.json | ✅ |
+| Budget Alerts | OCI Cost Monitoring (MANDATORY!) | ✅ |
 
 ## Related Repos
 
-- OpenSIN-onboarding: https://github.com/OpenSIN-AI/OpenSIN-onboarding
-- OpenSIN-documentation: https://github.com/OpenSIN-AI/OpenSIN-documentation
-- OpenSIN-overview: https://github.com/OpenSIN-AI/OpenSIN-overview
-- Infra-SIN-Docker-Empire: https://github.com/OpenSIN-AI/Infra-SIN-Docker-Empire
-- upgraded-opencode-stack: https://github.com/OpenSIN-AI/upgraded-opencode-stack
+- [upgraded-opencode-stack](https://github.com/Delqhi/upgraded-opencode-stack) — Complete OpenCode CLI Stack (Skills, Plugins, Agents, Commands, oh-my-sin.json)
+- [oh-my-sin.json](https://github.com/Delqhi/upgraded-opencode-stack/blob/main/oh-my-sin.json) — Zentrales A2A Team Register (17 Teams)
+- [OpenSIN-onboarding](https://github.com/OpenSIN-AI/OpenSIN-onboarding) — End-User Onboarding
+- [OpenSIN-documentation](https://github.com/OpenSIN-AI/OpenSIN-documentation) — Complete Project Documentation
+- [Infra-SIN-Docker-Empire](https://github.com/OpenSIN-AI/Infra-SIN-Docker-Empire) — Docker Infrastructure for Production
+- [OpenSIN-AI](https://opensin.ai) — OpenSIN-AI Ecosystem
+
+## A2A Teams (via oh-my-sin.json)
+
+| Team | Purpose | Manager |
+|:---|:---|:---|
+| team-code | Elite Coder Fleet (Implementation, Testing, Deployment) | A2A-SIN-Zeus |
+| team-worker | Autonomous Workers (Surveys, Freelancing, Monetization) | A2A-SIN-Team-Worker |
+| team-infrastructure | DevOps Fleet (Deployment, CI/CD, Monitoring) | A2A-SIN-Team-Infrastructure |
+| team-google-apps | Google Workspace (Docs, Sheets, Drive, Gmail) | A2A-SIN-Google-Apps |
+| team-apple | macOS/iOS Automation (Mail, Notes, Calendar, FaceTime, Safari) | A2A-SIN-Apple |
+| team-social | Social Media (TikTok, Instagram, X, LinkedIn, YouTube) | A2A-SIN-Social |
+| team-messaging | Messaging (WhatsApp, Telegram, Signal, Discord, iMessage) | A2A-SIN-Messaging |
+| team-forum | Forum Automation (Reddit, HackerNews, StackOverflow) | A2A-SIN-Forum |
+| team-legal | Legal Automation (Patents, Tax, Claims) | A2A-SIN-Legal |
+| team-coding-cybersec | Security Specialists (BugBounty, Cloudflare) | A2A-SIN-Code-CyberSec |
 
 ## Links
 
-- GitHub: https://github.com/OpenSIN-AI/dev-setup
-- Issues: https://github.com/OpenSIN-AI/dev-setup/issues
-- License: https://github.com/OpenSIN-AI/dev-setup/blob/main/LICENSE
+- GitHub: https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup
+- Issues: https://github.com/OpenSIN-AI/Infra-SIN-Dev-Setup/issues
+- Dashboard: https://opensin.ai/dashboard
+- Agents: https://opensin.ai/agents
