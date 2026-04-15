@@ -40,7 +40,7 @@ This is the **central setup documentation system** for OpenSIN-AI developers. It
 - Local MacBook → VS Code Remote SSH → OCI VM
 - Docker containers on both local Mac and OCI VM
 - Box.com cloud storage for persistent file backup
-- GitHub workflows for CI/CD automation
+- GitHub Templates (Issues, PRs) — Automatisierung via n8n + A2A-SIN-GitHub-Action auf OCI VM
 
 ## Quick Start Commands
 
