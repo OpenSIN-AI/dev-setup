@@ -1,0 +1,11 @@
+[Unit]
+Description=Run OCI emergency disk guard frequently
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

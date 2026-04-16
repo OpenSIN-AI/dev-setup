@@ -1,0 +1,7 @@
+[Unit]
+Description=Emergency stop coder services when OCI root disk exceeds threshold
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/oci-emergency-disk-guard.sh
