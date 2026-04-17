@@ -242,3 +242,173 @@ Ubuntu auf OCI nutzt standardmäßig strenge `iptables`-Regeln. Um z.B. Port 300
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 3000 -j ACCEPT
 sudo netfilter-persistent save
 ```
+
+---
+
+## 7. OCI VM Disk Full Prevention — BUG-OCI-001 Hardening Stack
+
+> **⚠️ CRITICAL: This section is MANDATORY for all OCI VMs running A2A agents.**
+> **Date:** 2026-04-16 — Incident: BUG-OCI-001 (disk full → all 6 coder agents dead)
+
+### What Happened (Root Cause Analysis)
+
+On 2026-04-16, the OCI VM `92.5.60.87` became **100% disk full** due to three compounding failures:
+
+1. **`.so` file leak** — Every call to `is_healthy()` in all 6 coder agents ran `subprocess.run(["opencode", "--version"])`, which created ~4.4 MB of temporary `.so` files in `/tmp/` per call. With 6 agents polling every ~10 seconds, this leaked **~100 MB/hour** into `/tmp/`. Python's `glob.glob(r"/tmp/.*.so")` was used in cleanup but the regex pattern was **invalid** (`.` is not `\.` in regex, so `.*.so` never matched anything).
+
+2. **App route shadowing** — All 6 FastAPI-based agents mounted Gradio on `/` **before** registering FastAPI routes. This caused `/health` to return `404`, making the health checks useless and preventing monitoring from detecting the leak.
+
+3. **No disk monitoring** — No systemd timer, no journald limits, no emergency stop. The VM bled disk until it hit 100% and the OCI VM itself became unresponsive.
+
+### The Fix — 5-Layer Protection Stack
+
+All hardening scripts are source-controlled in `Infra-SIN-Dev-Setup/scripts/` and deployed to `/usr/local/bin/` on the OCI VM.
+
+#### Layer 1: Runner Cleanup Timer (every 5 minutes)
+
+**Purpose:** Aggressively clean up leaked `.so` files before they accumulate.
+
+```bash
+# Script: /usr/local/bin/cleanup-runner-libs.sh
+# Uses Python glob (not regex) to find /tmp/.*.so files >10 minutes old
+# Deployed via: Infra-SIN-Dev-Setup/scripts/cleanup-runner-libs.sh
+```
+
+**systemd unit:**
+- Timer: `runner-cleanup.timer` — fires every 5 minutes
+- Service: `runner-cleanup.service` — runs the cleanup script
+
+#### Layer 2: Space Guardian Timer (every 1 hour)
+
+**Purpose:** Prune caches and Docker when disk ≥ 80%. Escalates to emergency guard if ≥ 85%.
+
+```bash
+# Script: /usr/local/bin/oci-space-guardian.sh
+# 1. At 80%: Clean pip cache, apt cache, Docker prune -af
+# 2. At 85%: Run cleanup-runner-libs.sh + oci-log-rotation.sh
+# 3. If still ≥ 85%: Trigger oci-emergency-disk-guard.service
+```
+
+**systemd unit:**
+- Timer: `oci-space-guardian.timer` — fires every 1 hour
+- Service: `oci-space-guardian.service`
+
+#### Layer 3: Emergency Disk Guard (every 5 minutes)
+
+**Purpose:** Last-resort auto-stop of all 6 coder services when disk stays critical.
+
+```bash
+# Script: /usr/local/bin/oci-emergency-disk-guard.sh
+# 1. Check root disk usage %
+# 2. If ≥ 85%: Run cleanup-runner-libs.sh + oci-log-rotation.sh
+# 3. If STILL ≥ 85%: Stop all 6 a2a-sin-code-*.service units
+# 4. Log last-stop reason to /var/lib/oci-emergency-disk-guard/last-stop.txt
+# 5. After stop: check disk — if < 80%, restart services
+```
+
+**systemd unit:**
+- Timer: `oci-emergency-disk-guard.timer` — fires every 5 minutes
+- Service: `oci-emergency-disk-guard.service`
+
+**Emergency recovery:** If all services are stopped, run on OCI:
+```bash
+sudo systemctl start a2a-sin-code-backend a2a-sin-code-command a2a-sin-code-frontend a2a-sin-code-fullstack a2a-sin-code-plugin a2a-sin-code-tool
+```
+
+#### Layer 4: Log Rotation (daily)
+
+**Purpose:** Prevent journald and syslog from consuming all disk.
+
+```bash
+# Script: /usr/local/bin/oci-log-rotation.sh
+# 1. Truncate oversized syslog files if > 500MB
+# 2. Vacuum journald to 200MB max, 7-day retention
+# 3. Create /var/lib/oci-emergency-disk-guard/ for guard state
+```
+
+**Permanent journald limits** (deployed as drop-in):
+```ini
+# /etc/systemd/journald.conf.d/90-oci-limits.conf
+SystemMaxUse=200M
+RuntimeMaxUse=200M
+SystemKeepFree=2G
+MaxRetentionSec=7day
+```
+
+**systemd unit:**
+- Timer: `oci-log-rotation.timer` — fires daily
+- Service: `oci-log-rotation.service`
+
+#### Layer 5: Self-Test (daily)
+
+**Purpose:** Verify all 4 protection layers are functioning. Alert if any check fails.
+
+```bash
+# Script: /usr/local/bin/oci-disk-self-test.sh
+# Runs 27 checks including:
+# - All scripts are executable
+# - All 4 timers are active + enabled
+# - journald hardening is present
+# - No "opencode --version" leak path in agent code
+# - Service hardening drop-ins are present
+# - Disk below 80%
+# - Health endpoints return 200
+# - Health checks create no new /tmp/.*.so files
+```
+
+**systemd unit:**
+- Timer: `oci-disk-self-test.timer` — fires daily at 03:00
+- Service: `oci-disk-self-test.service`
+
+### Quick Verify (on OCI VM)
+
+```bash
+# Disk status
+df -h /
+
+# All 5 timers active?
+systemctl list-timers | grep -E "runner-cleanup|oci-space-guardian|oci-emergency-disk-guard|oci-log-rotation|oci-disk-self-test"
+
+# All 6 agents running?
+systemctl is-active a2a-sin-code-backend a2a-sin-code-command a2a-sin-code-frontend a2a-sin-code-fullstack a2a-sin-code-plugin a2a-sin-code-tool
+
+# Run self-test (27 checks)
+sudo /usr/local/bin/oci-disk-self-test.sh
+
+# Emergency: stop all agents manually
+sudo systemctl stop a2a-sin-code-backend a2a-sin-code-command a2a-sin-code-frontend a2a-sin-code-fullstack a2a-sin-code-plugin a2a-sin-code-tool
+
+# Emergency: restart all agents
+sudo systemctl start a2a-sin-code-backend a2a-sin-code-command a2a-sin-code-frontend a2a-sin-code-fullstack a2a-sin-code-plugin a2a-sin-code-tool
+```
+
+### Agent-Level Fixes (also applied)
+
+1. **`is_healthy()` no longer calls `opencode --version`** — Changed to `shutil.which("opencode")` (zero file creation). Deployed to all 6 agents live and in all 6 GitHub repos.
+
+2. **Health route before Gradio mount** — FastAPI routes registered BEFORE `app.mount()` so `/health` returns `200`. Fixed in all 6 agents.
+
+3. **Service crash storm hardening** — All 6 agents have systemd drop-ins:
+   ```ini
+   [Service]
+   StartLimitIntervalSec=300
+   StartLimitBurst=3
+   Restart=on-failure
+   RestartSec=30
+   ExecStartPre=-/usr/local/bin/cleanup-runner-libs.sh
+   ```
+
+### Installation (fresh OCI VM)
+
+```bash
+# From Mac — deploy full hardening stack to OCI VM
+scp -i ~/.ssh/oci_key -r ~/dev/Infra-SIN-Dev-Setup/scripts/*.sh ubuntu@92.5.60.87:/tmp/
+scp -i ~/.ssh/oci_key -r ~/dev/Infra-SIN-Dev-Setup/systemd/*.timer ubuntu@92.5.60.87:/tmp/
+scp -i ~/.ssh/oci_key -r ~/dev/Infra-SIN-Dev-Setup/systemd/*.service ubuntu@92.5.60.87:/tmp/
+scp -i ~/.ssh/oci_key -r ~/dev/Infra-SIN-Dev-Setup/systemd/*.conf ubuntu@92.5.60.87:/tmp/
+
+# On OCI VM:
+bash /tmp/Infra-SIN-Dev-Setup/scripts/install-a2a-sin-code-hardening.sh
+```
+
+Full source-controlled installation script: `Infra-SIN-Dev-Setup/scripts/install-a2a-sin-code-hardening.sh`
