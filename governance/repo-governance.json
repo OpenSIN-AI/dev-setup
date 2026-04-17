@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "repo": "Infra-SIN-Dev-Setup",
+  "rules": {
+    "require-pr-watcher": true,
+    "require-visual-evidence": true,
+    "fail-closed": true
+  }
+}
