@@ -1,0 +1,45 @@
+{
+  "name": "OpenSIN Onboarding",
+  "description": "Autonomous first-run onboarding for OpenSIN — sets up Passwordmanager, Google Cloud Secrets, Chrome Extension, API keys, and platform accounts with zero manual intervention",
+  "url": "https://github.com/OpenSIN-AI/OpenSIN-onboarding",
+  "version": "1.0.0",
+  "provider": {
+    "organization": "OpenSIN-AI"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "skills": [
+    {
+      "id": "onboarding.system-bootstrap",
+      "name": "System Bootstrap",
+      "description": "Verify and install system prerequisites (Node.js, Python, gcloud, Chrome)"
+    },
+    {
+      "id": "onboarding.gcp-setup",
+      "name": "GCP Project Setup",
+      "description": "Create GCP project, enable Secret Manager, create service account"
+    },
+    {
+      "id": "onboarding.passwordmanager",
+      "name": "Passwordmanager Setup",
+      "description": "Build and configure A2A-SIN-Passwordmanager with gcloud backend"
+    },
+    {
+      "id": "onboarding.chrome-extension",
+      "name": "Chrome Extension Install",
+      "description": "Install OpenSIN Bridge Chrome extension"
+    },
+    {
+      "id": "onboarding.platform-accounts",
+      "name": "Platform Registration",
+      "description": "Register accounts on Groq, NVIDIA NIM, Hugging Face and store API keys"
+    },
+    {
+      "id": "onboarding.verification",
+      "name": "Verification",
+      "description": "Run end-to-end health checks on all onboarding components"
+    }
+  ]
+}
