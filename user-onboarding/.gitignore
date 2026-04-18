@@ -1,0 +1,12 @@
+*.json.bak
+*.stale.*
+.env
+.env.local
+auth/
+token.json
+credentials.db
+service_account.json
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store

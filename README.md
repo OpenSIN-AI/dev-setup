@@ -1,3 +1,51 @@
+# Infra-SIN-Setup
+
+> **Single source of truth for setting up OpenSIN — developer environments AND end-user first-run.**
+>
+> Renamed focus after April 2026 consolidation: this repo now covers *both* audiences that were previously split across `Infra-SIN-Dev-Setup` and the standalone `OpenSIN-onboarding` repo.
+
+## Two entry points
+
+### I am a developer — I want to work on OpenSIN code
+You are in the right place. Read:
+- [macOS-dev-setup.md](./macOS-dev-setup.md)
+- [OCI-dev-setup.md](./OCI-dev-setup.md)
+- [CloudFlare-dev-setup.md](./CloudFlare-dev-setup.md)
+- [OpenCode/OpenCode-dev-setup.md](./OpenCode/OpenCode-dev-setup.md)
+- [opencode-docker-build/](./opencode-docker-build/)
+
+### I am an end user — I just installed OpenSIN and want it to work
+See [`user-onboarding/`](./user-onboarding/). It contains the autonomous first-run scripts that set up:
+
+1. A2A-SIN-Passwordmanager (Google Cloud Secrets backend)
+2. OpenSIN Bridge Chrome Extension (CLI sideload)
+3. API accounts on free-tier platforms (NVIDIA NIM, Groq, Hugging Face, etc.)
+4. `gcloud` service account for secrets management
+5. Seed credentials into the Passwordmanager vault
+
+Entry script: [`user-onboarding/scripts/onboard.sh`](./user-onboarding/scripts/onboard.sh).
+Phases: [`phase1` → `phase6`](./user-onboarding/scripts/).
+
+## Canonical position
+
+This repo is owned by the `Infra-SIN-*` domain in the OpenSIN-AI organization. It is NOT where you write product code — product code lives in:
+
+- [`OpenSIN-AI/OpenSIN`](https://github.com/OpenSIN-AI/OpenSIN) — Python kernel
+- [`OpenSIN-AI/OpenSIN-Code`](https://github.com/OpenSIN-AI/OpenSIN-Code) — autonomous CLI
+- [`OpenSIN-AI/OpenSIN-backend`](https://github.com/OpenSIN-AI/OpenSIN-backend) — control plane
+- [`OpenSIN-AI/Team-SIN-Code-Core`](https://github.com/OpenSIN-AI/Team-SIN-Code-Core) — coding-team monorepo
+
+Full ownership map: [`OpenSIN-overview/docs/CANONICAL-REPOS.md`](https://github.com/OpenSIN-AI/OpenSIN-overview/blob/main/docs/CANONICAL-REPOS.md).
+
+## What moved here in April 2026
+
+`OpenSIN-AI/OpenSIN-onboarding` — a 39 KB standalone repo — was absorbed as `user-onboarding/` and archived. Its whole history is preserved upstream and its source tree is intact here, just one directory deep. Rationale: "set up the dev environment" and "set up the end-user environment" are the same domain with different audiences. Two repos for that was unnecessary and made it unclear where new setup automation should live.
+
+---
+
+<details>
+<summary>Original README (preserved verbatim)</summary>
+
 <a name="readme-top"></a>
 
 # Infra-SIN-Dev-Setup
@@ -317,3 +365,5 @@ Distributed under the **MIT License**. See [LICENSE](LICENSE) for more informati
 </p>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+</details>
